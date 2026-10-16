@@ -1,0 +1,32 @@
+# Unreal Engine 5 — fichiers générés, à ne jamais versionner
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+Build/*/
+!Build/Android/
+!Build/IOS/
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.sln
+*.suo
+*.sdf
+*.VC.db
+*.opensdf
+*.opendb
+
+# Builds empaquetés et symboles
+*.apk
+*.aab
+*.ipa
+*.obb
+*.pdb
+
+# Système
+.DS_Store
+Thumbs.db
