@@ -4,6 +4,7 @@ Ce dossier **est** le projet Unreal de **BOTOL — Battle of the Ocean's Legacy*
 
 | Fichier | Rôle |
 |---|---|
+| `Lancer_BOTOL.bat` | Double-clic : compile BOTOL et ouvre Unreal Engine 5.8 |
 | `BOTOL.uproject` | Le projet Unreal (UE 5.8, cibles Android et iOS) |
 | `Config/` | Réglages moteur, jeu et entrées, optimisés pour le mobile |
 | `Source/BOTOL/` | Code C++ : caméra isométrique, contrôles tactiles, unités, données de faction |
@@ -110,25 +111,21 @@ But : le projet compile, une bataille de test tourne dans l'éditeur, puis sur t
 - [ ] Sur le téléphone : options développeur activées, débogage USB autorisé, téléphone branché et accepté.
 - [ ] Git et Git LFS installés.
 
-### 4.2 Récupérer le projet
+### 4.2 Mettre le dossier BOTOL sur le Bureau
 
-Dans un terminal :
+1. Télécharge le projet (connecté à GitHub) : **https://github.com/liamor95/Test-vid-o-/archive/refs/heads/ccr-c8633fac-ff92q6.zip**
+2. Avant d'ouvrir le ZIP : clic droit sur le fichier → **Propriétés** → coche **Débloquer** → **OK**. Sinon Windows bloquera le lanceur.
+3. Ouvre le ZIP, puis le dossier qu'il contient, et **glisse le dossier `BOTOL` sur le Bureau**.
 
-```
-cd C:\Projets
-git clone https://github.com/liamor95/Test-vid-o-.git
-cd Test-vid-o-
-git checkout ccr-c8633fac-ff92q6
-git lfs install
-```
+**Attention à OneDrive.** Si le chemin de ton Bureau contient `OneDrive` (par exemple `C:\Users\...\OneDrive\Bureau`), ne mets pas le projet dessus : OneDrive synchroniserait en continu les milliers de fichiers qu'Unreal génère, et ça bloque la compilation. Dans ce cas, mets le dossier `BOTOL` dans `C:\Projets\`, puis fais un clic droit sur `Lancer_BOTOL.bat` → **Envoyer vers → Bureau (créer un raccourci)**.
 
-Le projet se trouve alors dans `C:\Projets\Test-vid-o-\BOTOL\`. Il doit être sur le disque rapide C:, comme WOTOL, et **jamais** dans le dossier WOTOL. Garde un chemin court : Unreal supporte mal les chemins très longs sous Windows.
+### 4.3 Ouvrir BOTOL en double-cliquant
 
-### 4.3 Compiler et ouvrir
+Dans le dossier `BOTOL`, double-clique sur **`Lancer_BOTOL.bat`**. Il trouve Unreal Engine 5.8, compile BOTOL (quelques minutes la première fois), puis ouvre l'éditeur sur le projet.
 
-1. Clic droit sur `BOTOL.uproject` → **Generate Visual Studio project files**. Si Windows demande quelle version d'Unreal utiliser, choisis la 5.8.
-2. Double-clique sur `BOTOL.uproject`. Unreal propose de recompiler le module « BOTOL » : réponds **Oui**.
-3. Si la compilation échoue : ouvre `BOTOL.sln`, choisis la configuration *Development Editor* / *Win64*, lance **Build**, et envoie à Claude le **premier** message d'erreur de la fenêtre *Output*.
+- Si Windows affiche « Windows a protégé votre ordinateur » : **Informations complémentaires → Exécuter quand même**.
+- Si la compilation échoue, la fenêtre reste ouverte : envoie à Claude les premières lignes qui contiennent `error`.
+- **Autre méthode**, comme pour WOTOL : double-clique sur `BOTOL.uproject` et réponds **Oui** quand Unreal propose de recompiler le module BOTOL.
 
 *Test :* l'éditeur s'ouvre sur un niveau vide, sans message d'erreur.
 
@@ -144,14 +141,14 @@ Le projet se trouve alors dans `C:\Projets\Test-vid-o-\BOTOL\`. Il doit être su
    - molette : zoom ;
    - clic sur un cylindre bleu : il est sélectionné (anneau jaune au sol) ;
    - clic au sol : il y va, en contournant les obstacles grâce au NavMesh.
-7. Ferme le jeu, sauvegarde tout (**Ctrl+Shift+S**), puis :
+7. Ferme le jeu et sauvegarde tout (**Ctrl+Shift+S**). Si le projet est suivi par Git (pas le cas avec le ZIP) :
    ```
    git add BOTOL
    git commit -m "BOTOL : niveau de test"
    git push
    ```
 
-*Test :* `git lfs ls-files` liste bien `L_TestBataille.umap`.
+*Test :* le niveau `L_TestBataille` s'ouvre tout seul au prochain lancement de l'éditeur.
 
 **Pour changer le nombre d'unités ou brancher les factions :** clic droit dans le Content Browser → **Blueprint Class** → cherche `BotolGameMode` → nom `BP_BotolGameMode`. Ouvre-le, règle *Test Units Per Team*, *Player Faction* et *Enemy Faction*, puis choisis-le comme **Default GameMode** dans *Maps & Modes*.
 
