@@ -1,15 +1,19 @@
-# BOTOL — Kit de démarrage du projet mobile
+# BOTOL — Projet Unreal Engine 5.8 mobile
 
-Ce dossier prépare la création du projet **BOTOL — Battle of the Ocean's Legacy** en local, sur le PC, dans un **nouveau projet Unreal Engine 5 dédié au mobile**. Rien ici n'est du code de jeu : c'est le plan à valider avant d'ouvrir l'éditeur, plus les fichiers à copier dans le futur dépôt BOTOL.
+Ce dossier **est** le projet Unreal de **BOTOL — Battle of the Ocean's Legacy** : une application mobile de stratégie en vue 3D isométrique, distincte de WOTOL. Il s'ouvre directement dans Unreal Engine 5.8 sur le PC (section 4).
 
 | Fichier | Rôle |
 |---|---|
-| `README.md` | Ce plan : décisions acquises, choix proposés, arbitrages, session 1 pas à pas, jalons |
-| `CLAUDE.md` | Consignes pour Claude Code en local, à copier à la racine du projet BOTOL |
+| `BOTOL.uproject` | Le projet Unreal (UE 5.8, cibles Android et iOS) |
+| `Config/` | Réglages moteur, jeu et entrées, optimisés pour le mobile |
+| `Source/BOTOL/` | Code C++ : caméra isométrique, contrôles tactiles, unités, données de faction |
+| `README.md` | Ce plan : décisions, réglages mobiles, session 1 pas à pas, jalons |
+| `CLAUDE.md` | Consignes pour Claude Code en local |
+| `JOURNAL.md` | Journal des sessions de travail |
 | `AUDIT_REUTILISATION_WOTOL.md` | Grille pour trier ce qui passe de WOTOL à BOTOL |
-| `.gitignore` / `.gitattributes` | Fichiers Git + Git LFS pour un projet UE5, à copier à la racine du projet BOTOL |
+| `.gitignore` / `.gitattributes` | Git + Git LFS pour Unreal |
 
-Rédigé le 16/10/2026 à partir de la page Notion BOTOL (02/09/2026), du journal de bord et du document « ChatGPT & CLAUDE ». Tout ce qui n'y figure pas est marqué **proposition** ou **à arbitrer**.
+Rédigé à partir de la page Notion BOTOL (02/09/2026), du journal de bord, du document « ChatGPT & CLAUDE » et des consignes de Liamor du 18/10/2026. Tout ce qui n'y figure pas est marqué **proposition** ou **provisoire**.
 
 ---
 
@@ -53,12 +57,26 @@ C'est déjà le fonctionnement de WOTOL. Ça compte pour une raison pratique : C
 **Plateforme : Android d'abord, iOS ensuite.**
 Sous Windows, on construit et on teste sur Android sans matériel supplémentaire. iOS attendra que le prototype tienne debout et qu'un Mac soit disponible (achat d'occasion, prêt ou Mac en location dans le cloud).
 
-**Modèle de départ : *Top Down*, variante *Strategy* (disponible depuis UE 5.6).**
-D'après Epic, cette variante fournit déjà une caméra orthographique isométrique avec zoom et déplacement, la sélection de plusieurs unités et leur déplacement en groupe. C'est le plus proche des étapes 3 et 4 de la boucle.
-*Ce qu'on garde, ce qu'on remplace :* on garde la caméra isométrique et la sélection en groupe. Les contrôles souris et clavier du modèle sont remplacés par du tactile au jalon M2. La variante déplace les unités sur une grille ; si le benchmark des jeux mobiles confirme un déplacement libre, la grille sera retirée à ce moment-là.
+**Base : un projet C++ écrit sur mesure, sans modèle Unreal.**
+Le modèle *Top Down* d'Unreal est pensé pour la souris. Le projet contient donc déjà sa propre caméra isométrique et ses contrôles tactiles en C++ : il n'y a rien à défaire, et Claude Code peut tout lire et modifier. Seuls le niveau de test et les Data Assets se créent dans l'éditeur.
 
-**Gestion de versions : un nouveau dépôt Git privé « BOTOL » avec Git LFS.**
-Tu travailles seul sur BOTOL et Claude Code fonctionne avec Git. Perforce, recommandé le 04/10 pour WOTOL, se justifie surtout quand plusieurs personnes modifient les mêmes `.uasset`. Vérifie le quota LFS gratuit de l'hébergeur : il se remplit vite avec des modèles 3D et des textures.
+**Gestion de versions : Git + Git LFS.**
+Pour l'instant, le projet vit dans le dépôt `Test-vid-o-` (branche `ccr-c8633fac-ff92q6`). À terme, il ira dans un dépôt privé dédié « BOTOL ». Tu travailles seul sur BOTOL et Claude Code fonctionne avec Git. Perforce, recommandé le 04/10 pour WOTOL, se justifie surtout quand plusieurs personnes modifient les mêmes `.uasset`. Vérifie le quota LFS gratuit de l'hébergeur : il se remplit vite avec des modèles 3D et des textures.
+
+**Ce qui est déjà réglé dans le projet pour le mobile**
+
+| Domaine | Réglage | Fichier |
+|---|---|---|
+| Cible | Matériel *Mobile*, qualité *Scalable* | `Config/DefaultEngine.ini` |
+| Rendu | Rendu *forward* mobile, anticrénelage MSAA 4x, éclairage précalculé autorisé, HDR mobile gardé pour l'ambiance | `DefaultEngine.ini` |
+| Fonctions PC coupées | Nanite, Lumen, réflexions, ombres virtuelles, *distance fields*, ray tracing, textures virtuelles, Substrate | `DefaultEngine.ini` |
+| Effets coupés par défaut | Exposition automatique, flou de mouvement, occlusion ambiante, *lens flare* | `DefaultEngine.ini` |
+| Android | Paysage avec rotation auto, plein écran immersif, Vulkan + OpenGL ES 3.1 en secours, arm64, identifiant provisoire `com.troisdecors.botol` | `DefaultEngine.ini` |
+| iOS | Paysage uniquement, identifiant provisoire identique | `DefaultEngine.ini` |
+| Entrées | Pas de joysticks virtuels ; dans l'éditeur, la souris imite un doigt | `Config/DefaultInput.ini` |
+| Paquet | Shaders partagés, compression, pas de fichiers de debug embarqués | `Config/DefaultGame.ini` |
+| Unités | Déplacement *NavWalking* (pas de test du sol à chaque image), pas de Tick d'acteur, animation calculée seulement si visible | `Source/BOTOL/Units/` |
+| Contrôles | Aucun événement de clic par acteur : les doigts sont lus directement, sans trace inutile | `Source/BOTOL/Player/` |
 
 **Rendu mobile : ne compter ni sur Nanite ni sur Lumen.**
 Selon Epic, Lumen sur mobile reste expérimental, réservé aux Android haut de gamme, et ne fonctionne pas sur iOS. Je n'ai trouvé aucun support officiel de Nanite sur mobile. En pratique : géométrie classique avec des LOD, éclairage simple, préréglage *Scalable*.
@@ -80,9 +98,9 @@ Selon Epic, Lumen sur mobile reste expérimental, réservé aux Android haut de 
 
 ---
 
-## 4. Session 1 — créer le projet (pas à pas)
+## 4. Session 1 — ouvrir le projet sur le PC (pas à pas)
 
-But : avoir un projet BOTOL vide qui démarre sur ton téléphone Android, sauvegardé dans Git. Pas de gameplay à ce stade.
+But : le projet compile, une bataille de test tourne dans l'éditeur, puis sur ton téléphone Android.
 
 ### 4.1 Prérequis
 
@@ -90,45 +108,62 @@ But : avoir un projet BOTOL vide qui démarre sur ton téléphone Android, sauve
 - [ ] Visual Studio 2022 avec la charge de travail « Développement de jeux en C++ » (normalement déjà installé pour WOTOL).
 - [ ] Android Studio et le NDK **dans les versions qu'Epic indique pour la 5.8**, sur la page *Android Development Requirements*. Ensuite, lance `Engine\Extras\Android\SetupAndroid.bat` depuis le dossier d'installation d'Unreal.
 - [ ] Sur le téléphone : options développeur activées, débogage USB autorisé, téléphone branché et accepté.
-- [ ] Git et Git LFS installés (`git lfs install`).
+- [ ] Git et Git LFS installés.
 
-### 4.2 Créer le projet
+### 4.2 Récupérer le projet
 
-1. Lance UE 5.8 et choisis **Games → Top Down**.
-2. Variante : **Strategy**.
-3. Type de projet : **C++**.
-4. Plateforme cible : **Mobile**. Préréglage de qualité : **Scalable**.
-5. Contenu de démarrage : **non**. Ray tracing : **non**.
-6. Emplacement : un dossier **à part**, jamais à l'intérieur du dossier WOTOL. Mets-le sur le disque rapide C:, comme le projet WOTOL (D: est le disque externe qui contient les sources d'assets dans `D:\WOTOL`). Par exemple : `C:\Projets\BOTOL`.
-7. Nom du projet : `BOTOL`.
+Dans un terminal :
 
-*Test :* le projet s'ouvre, tu lances *Play* dans l'éditeur, la caméra isométrique et la sélection d'unités du modèle fonctionnent à la souris.
+```
+cd C:\Projets
+git clone https://github.com/liamor95/Test-vid-o-.git
+cd Test-vid-o-
+git checkout ccr-c8633fac-ff92q6
+git lfs install
+```
 
-### 4.3 Premier commit, avant toute autre chose
+Le projet se trouve alors dans `C:\Projets\Test-vid-o-\BOTOL\`. Il doit être sur le disque rapide C:, comme WOTOL, et **jamais** dans le dossier WOTOL. Garde un chemin court : Unreal supporte mal les chemins très longs sous Windows.
 
-1. Ferme l'éditeur.
-2. Copie `.gitignore`, `.gitattributes` et `CLAUDE.md` de ce dossier à la racine du projet, à côté de `BOTOL.uproject`.
-3. Dans un terminal, à la racine du projet :
+### 4.3 Compiler et ouvrir
+
+1. Clic droit sur `BOTOL.uproject` → **Generate Visual Studio project files**. Si Windows demande quelle version d'Unreal utiliser, choisis la 5.8.
+2. Double-clique sur `BOTOL.uproject`. Unreal propose de recompiler le module « BOTOL » : réponds **Oui**.
+3. Si la compilation échoue : ouvre `BOTOL.sln`, choisis la configuration *Development Editor* / *Win64*, lance **Build**, et envoie à Claude le **premier** message d'erreur de la fenêtre *Output*.
+
+*Test :* l'éditeur s'ouvre sur un niveau vide, sans message d'erreur.
+
+### 4.4 Créer le niveau de test
+
+1. **File → New Level → Basic** : un niveau avec du sol, une lumière et un ciel.
+2. Ajoute un grand sol pour la bataille : panneau **Place Actors → Shapes → Plane**, glisse-le dans le niveau, puis dans *Details* mets **Location** à `(0, 0, 0)` et **Scale** à `(60, 60, 1)`. Ça fait 60 × 60 m.
+3. Ajoute la navigation : **Place Actors** → cherche **Nav Mesh Bounds Volume** → glisse-le dans le niveau → **Location** `(0, 0, 0)`, **Scale** `(30, 30, 2)`. Appuie sur **P** : le sol doit devenir vert. Appuie de nouveau sur **P** pour masquer.
+4. **File → Save Current Level As** → crée le dossier `BOTOL/Maps` dans le Content Browser → nom `L_TestBataille`.
+5. **Edit → Project Settings → Maps & Modes** : mets **Editor Startup Map** et **Game Default Map** sur `L_TestBataille`.
+6. Lance **Play**. Tu dois voir 5 cylindres bleus (ton équipe) et 5 rouges (l'IA), vus de biais en isométrique.
+   - clic maintenu et glisser : la vue se déplace ;
+   - molette : zoom ;
+   - clic sur un cylindre bleu : il est sélectionné (anneau jaune au sol) ;
+   - clic au sol : il y va, en contournant les obstacles grâce au NavMesh.
+7. Ferme le jeu, sauvegarde tout (**Ctrl+Shift+S**), puis :
    ```
-   git init
-   git lfs install
-   git add .gitattributes .gitignore
-   git commit -m "Configuration Git et LFS"
-   git add .
-   git commit -m "Projet BOTOL initial (Top Down Strategy, mobile, UE 5.8)"
+   git add BOTOL
+   git commit -m "BOTOL : niveau de test"
+   git push
    ```
-4. Crée un dépôt **privé** BOTOL sur GitHub et pousse-le.
 
-*Test :* `git lfs ls-files` liste bien les `.uasset` et `.umap`. Le dépôt ne contient ni `Binaries/`, ni `Intermediate/`, ni `Saved/`, ni `DerivedDataCache/`.
+*Test :* `git lfs ls-files` liste bien `L_TestBataille.umap`.
 
-### 4.4 Premier lancement sur le téléphone
+**Pour changer le nombre d'unités ou brancher les factions :** clic droit dans le Content Browser → **Blueprint Class** → cherche `BotolGameMode` → nom `BP_BotolGameMode`. Ouvre-le, règle *Test Units Per Team*, *Player Faction* et *Enemy Faction*, puis choisis-le comme **Default GameMode** dans *Maps & Modes*.
 
-1. **Project Settings → Platforms → Android** : accepte la licence du SDK. Ne remplis l'identifiant d'application qu'une fois le point 5 de la section 3 tranché ; garde une valeur provisoire d'ici là.
-2. Dans la barre d'outils : **Platforms → Android →** ton téléphone **→ Launch**.
-3. Sur le téléphone, ouvre la console (tape à quatre doigts dans une version de développement) et entre `stat fps`, puis `stat unit`.
-4. Note les chiffres dans `JOURNAL.md` : modèle du téléphone, images par seconde, temps de jeu et de rendu (*Game* / *Draw* / *GPU*).
+### 4.5 Premier lancement sur le téléphone
 
-*C'est fini quand :* le modèle tourne sur ton téléphone, les mesures de départ sont notées, et le tout est commité.
+1. **Project Settings → Platforms → Android** : clique sur **Accept SDK License**. L'identifiant provisoire `com.troisdecors.botol` est déjà rempli.
+2. Dans la barre d'outils : **Platforms → Android** → ton téléphone → **Launch**. Si Unreal propose plusieurs formats de texture, prends **ASTC**, le format des téléphones récents.
+3. Sur le téléphone : un doigt qui glisse déplace la vue, deux doigts qui pincent zooment, un tap sélectionne ou donne l'ordre de déplacement.
+4. Ouvre la console avec un tap à quatre doigts, puis entre `stat fps`, puis `stat unit`.
+5. Note dans `JOURNAL.md` : le modèle du téléphone, les images par seconde, et les temps *Game*, *Draw* et *GPU*.
+
+*C'est fini quand :* le projet compile, la bataille de test tourne dans l'éditeur et sur le téléphone, les mesures sont notées, et le tout est commité.
 
 ---
 
@@ -136,36 +171,30 @@ But : avoir un projet BOTOL vide qui démarre sur ton téléphone Android, sauve
 
 L'ordre suit la Phase 2 de Notion. Chaque jalon ne compte comme terminé qu'une fois testé **sur le téléphone**, pas seulement dans l'éditeur.
 
-| # | Jalon | C'est fini quand |
-|---|---|---|
-| M0 | Projet créé, Git, premier lancement Android | Section 4 terminée |
-| M1 | Données de faction et d'unité, pilotées par les données | Ajouter une faction = ajouter un fichier de données, sans toucher au code. Aquiloris et Noxéens sont créés ; Thalassidras, Muréniens et Pirates Abyssaux pourront suivre plus tard sans réécriture |
-| M2 | Caméra et contrôles tactiles | Déplacer la vue, zoomer, sélectionner et donner un ordre au doigt, sans souris |
-| M3 | Combat de base | Deux unités s'affrontent et l'une meurt, avec des valeurs lues dans les données |
-| M4 | IA ennemie | L'IA déplace ses unités et attaque toute seule |
-| M5 | Victoire et défaite | Une partie se termine et affiche un résultat |
-| M6 | Écran de préparation et retour | La boucle complète, étapes 1 à 7, tourne sans redémarrer l'application |
-| M7 | Première progression simple | Une récompense obtenue est conservée d'une partie à l'autre |
-| M8 | Mesure de performances | Le pire cas mesuré sur le téléphone de référence (nombre d'unités à l'écran) tient l'objectif d'images par seconde que tu auras fixé |
+| # | Jalon | État au 18/10/2026 | C'est fini quand |
+|---|---|---|---|
+| M0 | Projet, Git, premier lancement Android | **Projet généré**, à compiler et lancer (section 4) | Section 4 terminée |
+| M1 | Données de faction et d'unité | **Code prêt** (`BotolFactionData`, `BotolUnitData`). Reste à créer les Data Assets Aquiloris et Noxéens dans l'éditeur | Ajouter une faction = ajouter un fichier de données, sans toucher au code. Thalassidras, Muréniens et Pirates Abyssaux pourront suivre plus tard sans réécriture |
+| M2 | Caméra et contrôles tactiles | **Code prêt** : caméra isométrique, glisser, pincer, tap pour sélectionner et donner un ordre. À tester sur le téléphone | Déplacer la vue, zoomer, sélectionner et donner un ordre au doigt, sans souris |
+| M3 | Combat de base | À faire | Deux unités s'affrontent et l'une meurt, avec des valeurs lues dans les données |
+| M4 | IA ennemie | À faire | L'IA déplace ses unités et attaque toute seule |
+| M5 | Victoire et défaite | À faire | Une partie se termine et affiche un résultat |
+| M6 | Écran de préparation et retour | À faire | La boucle complète, étapes 1 à 7, tourne sans redémarrer l'application |
+| M7 | Première progression simple | À faire | Une récompense obtenue est conservée d'une partie à l'autre |
+| M8 | Mesure de performances | À faire | Le pire cas mesuré sur le téléphone de référence (nombre d'unités à l'écran) tient l'objectif d'images par seconde que tu auras fixé |
 
-La structure de code prévue pour M1, à valider avant de l'écrire :
+Organisation du code :
 
 ```
 Source/BOTOL/
-  Core/         mode de jeu, état de partie, contrôleur joueur
-  Factions/     données de faction (un Data Asset par faction)
-  Units/        acteur d'unité + données d'unité
-  Combat/       dégâts, cibles, portée
-  AI/           IA ennemie
-  Input/        contrôles tactiles
-  UI/           écrans et interface de bataille
-  Progression/  sauvegarde et récompenses
+  Game/     mode de jeu (bataille de test)
+  Player/   caméra isométrique + contrôles tactiles
+  Units/    unité de bataille
+  Data/     Data Assets de faction et d'unité
+  (à venir : Combat/, AI/, UI/, Progression/)
 Content/BOTOL/
-  Factions/Aquiloris/   Factions/Noxeens/
-  Maps/   UI/   Audio/   Core/
+  Maps/   Factions/Aquiloris/   Factions/Noxeens/   UI/   Audio/
 ```
-
-Le contenu du modèle de départ reste dans son propre dossier (`Variant_Strategy/`). On le remplace petit à petit, sans le mélanger au contenu BOTOL.
 
 ---
 
@@ -174,8 +203,6 @@ Le contenu du modèle de départ reste dans son propre dossier (`Variant_Strateg
 - Notion : page « BOTOL — Battle of the Ocean's Legacy » (02/09/2026) et « Journal de bord ».
 - Drive : document « ChatGPT & CLAUDE » (moteur WOTOL 5.8 du 25/07/2026, recommandation Perforce du 04/10/2026, relevé de l'Aquilance).
 - [Epic — Android Development Requirements](https://dev.epicgames.com/documentation/unreal-engine/android-development-requirements-for-unreal-engine)
-- [Epic — Updated game templates for UE 5.6 (variantes Strategy / Twin Stick)](https://www.unrealengine.com/news/updated-game-templates-for-unreal-engine-5-6available-now)
-- [Epic — Variants in game templates](https://dev.epicgames.com/documentation/unreal-engine/variants-in-game-templates)
 - [Epic — Building iOS projects on Windows (page 5.2)](https://dev.epicgames.com/documentation/en-us/unreal-engine/building-ios-projects-on-windows-in-unreal-engine?application_version=5.2)
 - [Epic — Remote builds for iOS](https://dev.epicgames.com/documentation/en-us/unreal-engine/creating-remote-builds-of-unreal-engine-projects-for-ios)
 - [Epic — Lumen on mobile](https://dev.epicgames.com/documentation/unreal-engine/using-lumen-global-illumination-on-mobile-in-unreal-engine)

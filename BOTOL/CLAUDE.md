@@ -44,7 +44,9 @@ Quand Liamor demande à apprendre ou à faire lui-même :
 - **Pilotée par les données.** Une faction ou une unité = un fichier de données (Data Asset). Ajouter une faction ne doit demander aucune modification du code.
 - Une mécanique définie pour une faction doit pouvoir s'appliquer de façon cohérente aux autres. Aucune règle propre aux Aquiloris codée en dur.
 - Premier prototype : Aquiloris contre Noxéens seulement. Les trois autres factions (Thalassidras, Muréniens, Pirates Abyssaux) arriveront plus tard, sans réécrire l'architecture.
-- Le contenu du modèle de départ reste dans `Content/Variant_Strategy/`. Le contenu BOTOL va dans `Content/BOTOL/`.
+- Code : `Source/BOTOL/Game` (mode de jeu), `Player` (caméra isométrique + tactile), `Units`, `Data`. Assets : `Content/BOTOL/`.
+- Les contrôles tactiles lisent les doigts directement (`GetInputTouchState`) : aucun asset d'entrée n'est nécessaire. Ne pas réintroduire de joysticks virtuels.
+- Ne pas réactiver dans `Config/DefaultEngine.ini` ce qui a été coupé pour le mobile (Nanite, Lumen, ombres virtuelles, ray tracing, distance fields) sans l'accord de Liamor.
 
 ## Décisions confirmées (18/10/2026)
 

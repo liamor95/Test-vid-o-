@@ -1,0 +1,21 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.8",
+	"Category": "",
+	"Description": "BOTOL - Battle of the Ocean's Legacy : jeu de strategie mobile (Android, iOS).",
+	"Modules": [
+		{
+			"Name": "BOTOL",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"AIModule"
+			]
+		}
+	],
+	"TargetPlatforms": [
+		"Android",
+		"IOS"
+	]
+}
