@@ -11,6 +11,7 @@ Ce dossier **est** le projet Unreal de **BOTOL — Battle of the Ocean's Legacy*
 | `README.md` | Ce plan : décisions, réglages mobiles, session 1 pas à pas, jalons |
 | `CLAUDE.md` | Consignes pour Claude Code en local |
 | `JOURNAL.md` | Journal des sessions de travail |
+| `BENCHMARK_STRATEGIE_MOBILE.md` | Benchmark de 17 jeux de stratégie mobiles : caméra, orientation, gestes, contrôle des unités, mise en œuvre UE 5.8 |
 | `AUDIT_REUTILISATION_WOTOL.md` | Grille pour trier ce qui passe de WOTOL à BOTOL |
 | `.gitignore` / `.gitattributes` | Git + Git LFS pour Unreal |
 
@@ -59,7 +60,7 @@ C'est déjà le fonctionnement de WOTOL. Ça compte pour une raison pratique : C
 Sous Windows, on construit et on teste sur Android sans matériel supplémentaire. iOS attendra que le prototype tienne debout et qu'un Mac soit disponible (achat d'occasion, prêt ou Mac en location dans le cloud).
 
 **Base : un projet C++ écrit sur mesure, sans modèle Unreal.**
-Le modèle *Top Down* d'Unreal est pensé pour la souris. Le projet contient donc déjà sa propre caméra isométrique et ses contrôles tactiles en C++ : il n'y a rien à défaire, et Claude Code peut tout lire et modifier. Seuls le niveau de test et les Data Assets se créent dans l'éditeur.
+La variante *Strategy* du modèle *Top Down* d'Unreal gère le tactile, mais en partie seulement, d'après le benchmark (`BENCHMARK_STRATEGIE_MOBILE.md`, section 6) : pas de zoom par pincement (le second doigt trace un cadre de sélection), une sélection qui s'ajoute toujours à la précédente, et aucune limite de carte. Le geste de pincement natif d'Enhanced Input a de plus un bug en 5.8 (UE-392736). Le projet contient donc sa propre caméra isométrique et ses contrôles tactiles en C++, avec un pincement calculé à la main : Claude Code peut tout lire et modifier. Seuls le niveau de test et les Data Assets se créent dans l'éditeur.
 
 **Gestion de versions : Git + Git LFS.**
 Pour l'instant, le projet vit dans le dépôt `Test-vid-o-` (branche `ccr-c8633fac-ff92q6`). À terme, il ira dans un dépôt privé dédié « BOTOL ». Tu travailles seul sur BOTOL et Claude Code fonctionne avec Git. Perforce, recommandé le 04/10 pour WOTOL, se justifie surtout quand plusieurs personnes modifient les mêmes `.uasset`. Vérifie le quota LFS gratuit de l'hébergeur : il se remplit vite avec des modèles 3D et des textures.
