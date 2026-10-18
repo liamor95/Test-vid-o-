@@ -142,6 +142,11 @@ void ABotolUnit::ApplyColors()
 	}
 }
 
+UBotolUnitData* ABotolUnit::GetUnitData() const
+{
+	return UnitData.Get();
+}
+
 void ABotolUnit::SetSelected(bool bInSelected)
 {
 	bSelected = bInSelected;

@@ -51,7 +51,7 @@ public:
 	float GetCurrentHealth() const { return CurrentHealth; }
 
 	UFUNCTION(BlueprintPure, Category = "BOTOL|Unit")
-	UBotolUnitData* GetUnitData() const { return UnitData; }
+	UBotolUnitData* GetUnitData() const;
 
 protected:
 	virtual void BeginPlay() override;

@@ -60,6 +60,12 @@ void ABotolCameraPawn::PanBy(const FVector& WorldDelta)
 	SetActorLocation(Location);
 }
 
+void ABotolCameraPawn::FocusOn(const FVector& WorldPoint)
+{
+	SetActorLocation(FVector(WorldPoint.X, WorldPoint.Y, GroundHeight));
+	PanBy(FVector::ZeroVector);
+}
+
 void ABotolCameraPawn::ZoomBy(float Factor)
 {
 	if (Factor <= 0.f)

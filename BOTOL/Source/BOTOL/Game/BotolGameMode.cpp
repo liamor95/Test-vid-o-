@@ -43,6 +43,17 @@ void ABotolGameMode::BeginPlay()
 
 	SpawnTestTeam(PlayerFaction, 0, PlayerSpawnCenter, BotolTestTeam::PlayerFallbackColor);
 	SpawnTestTeam(EnemyFaction, 1, EnemySpawnCenter, BotolTestTeam::EnemyFallbackColor);
+
+	// La vue démarre au milieu des deux équipes.
+	const FVector BattleCenter = (PlayerSpawnCenter + EnemySpawnCenter) * 0.5;
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		const APlayerController* PlayerController = It->Get();
+		if (ABotolCameraPawn* CameraPawn = PlayerController ? Cast<ABotolCameraPawn>(PlayerController->GetPawn()) : nullptr)
+		{
+			CameraPawn->FocusOn(BattleCenter);
+		}
+	}
 }
 
 void ABotolGameMode::SpawnTestTeam(UBotolFactionData* Faction, int32 TeamId, const FVector& Center, const FLinearColor& FallbackColor)

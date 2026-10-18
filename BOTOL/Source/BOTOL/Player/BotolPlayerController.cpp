@@ -67,7 +67,7 @@ void ABotolPlayerController::PlayerTick(float DeltaTime)
 	if (bDown1 && bDown2)
 	{
 		const double Distance = FVector2D::Distance(Finger1, Finger2);
-		if (bPinching && CameraPawn && Distance > KINDA_SMALL_NUMBER && LastPinchDistance > KINDA_SMALL_NUMBER)
+		if (bPinching && CameraPawn && Distance > UE_KINDA_SMALL_NUMBER && LastPinchDistance > UE_KINDA_SMALL_NUMBER)
 		{
 			CameraPawn->ZoomBy(static_cast<float>(LastPinchDistance / Distance));
 		}

@@ -27,6 +27,9 @@ public:
 	/** Déplace la vue sur le sol (en cm, coordonnées monde), en restant dans les limites de la carte. */
 	void PanBy(const FVector& WorldDelta);
 
+	/** Place le centre de la vue sur ce point de la carte (dans les limites). */
+	void FocusOn(const FVector& WorldPoint);
+
 	/** Facteur > 1 : la caméra recule. Facteur < 1 : elle se rapproche. */
 	void ZoomBy(float Factor);
 
