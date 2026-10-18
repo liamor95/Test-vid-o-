@@ -50,6 +50,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "BOTOL|Touch", meta = (ClampMin = "0"))
 	float TapSelectRadius = 120.f;
 
+	/** Même tolérance quand une unité est déjà sélectionnée : réduite, pour qu'un tap au sol reste un ordre. */
+	UPROPERTY(EditAnywhere, Category = "BOTOL|Touch", meta = (ClampMin = "0"))
+	float TapSelectRadiusWhenSelected = 50.f;
+
 	/** Pas de zoom par cran de molette (test sur PC). */
 	UPROPERTY(EditAnywhere, Category = "BOTOL|Touch", meta = (ClampMin = "0.01", ClampMax = "0.5"))
 	float MouseWheelZoomStep = 0.1f;
@@ -63,6 +67,9 @@ private:
 	ABotolUnit* FindClosestUnit(const FVector& WorldPoint, float Radius, int32 TeamId) const;
 
 	TWeakObjectPtr<ABotolUnit> SelectedUnit;
+
+	/** Doigt qui pilote le déplacement de la vue (change si le premier doigt se lève pendant un pincement). */
+	ETouchIndex::Type PrimaryTouch = ETouchIndex::Touch1;
 
 	bool bPrimaryDown = false;
 	bool bDragging = false;

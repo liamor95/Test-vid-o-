@@ -4,6 +4,28 @@ Entrée la plus récente en haut. Pour chaque session : ce qui a été fait, ce 
 
 ---
 
+## 18/10/2026 (suite) — Relecture du code, corrections (Claude Code, session cloud)
+
+**Relecture automatique** (2 relecteurs sur 3 ont abouti ; la contre-vérification a été interrompue par une limite d'utilisation)
+- Compilation : **aucune erreur bloquante trouvée**. Signatures moteur, includes, règles UHT, types double/float et BOM UTF-8 vérifiés.
+- Comportement en jeu : plusieurs défauts, corrigés ci-dessous.
+
+**Corrigé**
+- Avec un NavMesh, une destination inaccessible est refusée au lieu d'envoyer l'unité en ligne droite à travers les obstacles.
+- Taper une unité ennemie : l'unité la rejoint et s'arrête au contact (MoveToActor), au lieu de pousser contre elle.
+- Avec une unité sélectionnée, un tap au sol près d'une unité alliée donne bien un ordre (tolérance réduite à 50 cm).
+- Fin de pincement en levant le premier doigt : le doigt restant continue de déplacer la vue.
+- Tap très bref (appui et relâchement dans la même image) : il n'est plus perdu.
+- `IsSelected` renommé `IsUnitSelected` pour ne pas masquer la sélection de l'éditeur.
+- `UE_KINDA_SMALL_NUMBER` au lieu de la macro historique ; caméra centrée sur la bataille au lancement.
+
+**Laissé en l'état, volontairement**
+- Les cylindres provisoires utilisent chacun un matériau dynamique. Coût négligeable à 5 contre 5 ; les vrais modèles utiliseront des Material Instances. Pour les mesures de performance du jalon M8, tester avec les vrais maillages.
+
+**Toujours pas testé** : aucune compilation (pas d'Unreal dans la session cloud).
+
+---
+
 ## 18/10/2026 — Génération du projet Unreal (Claude Code, session cloud)
 
 **Fait**

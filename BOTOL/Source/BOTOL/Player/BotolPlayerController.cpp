@@ -75,35 +75,38 @@ void ABotolPlayerController::PlayerTick(float DeltaTime)
 		LastPinchDistance = Distance;
 		bTapCandidate = false;
 		bPrimaryDown = true;
-		PrimaryLast = Finger1;
 		return;
 	}
 
 	if (bPinching)
 	{
-		// Fin du pincement : on repart de la position actuelle du doigt restant, sans saut de caméra.
+		// Fin du pincement : le doigt resté posé, quel qu'il soit, reprend le déplacement de la vue, sans saut.
 		bPinching = false;
 		LastPinchDistance = 0.0;
 		bTapCandidate = false;
-		bDragging = bDown1;
-		PrimaryLast = Finger1;
+		PrimaryTouch = bDown1 ? ETouchIndex::Touch1 : ETouchIndex::Touch2;
+		bDragging = bDown1 || bDown2;
+		PrimaryLast = bDown1 ? Finger1 : Finger2;
 	}
 
+	const bool bPrimaryNowDown = (PrimaryTouch == ETouchIndex::Touch1) ? bDown1 : bDown2;
+	const FVector2D PrimaryPosition = (PrimaryTouch == ETouchIndex::Touch1) ? Finger1 : Finger2;
+
 	// --- Un doigt : glisser pour déplacer la vue, ou tap. ---
-	if (bDown1)
+	if (bPrimaryNowDown)
 	{
 		if (!bPrimaryDown)
 		{
 			bPrimaryDown = true;
 			bDragging = false;
 			bTapCandidate = true;
-			PrimaryStart = Finger1;
-			PrimaryLast = Finger1;
+			PrimaryStart = PrimaryPosition;
+			PrimaryLast = PrimaryPosition;
 			PrimaryDownTime = Now;
 		}
 		else
 		{
-			if (!bDragging && FVector2D::Distance(Finger1, PrimaryStart) > GetDragThreshold())
+			if (!bDragging && FVector2D::Distance(PrimaryPosition, PrimaryStart) > GetDragThreshold())
 			{
 				bDragging = true;
 				bTapCandidate = false;
@@ -113,13 +116,13 @@ void ABotolPlayerController::PlayerTick(float DeltaTime)
 			{
 				FVector LastWorld;
 				FVector CurrentWorld;
-				if (DeprojectToGround(PrimaryLast, LastWorld) && DeprojectToGround(Finger1, CurrentWorld))
+				if (DeprojectToGround(PrimaryLast, LastWorld) && DeprojectToGround(PrimaryPosition, CurrentWorld))
 				{
 					// Le point de la carte saisi au doigt reste sous le doigt.
 					CameraPawn->PanBy(LastWorld - CurrentWorld);
 				}
 			}
-			PrimaryLast = Finger1;
+			PrimaryLast = PrimaryPosition;
 		}
 	}
 	else if (bPrimaryDown)
@@ -131,6 +134,18 @@ void ABotolPlayerController::PlayerTick(float DeltaTime)
 		}
 		bDragging = false;
 		bTapCandidate = false;
+	}
+	else if (!bDown1 && !bDown2 && WasInputKeyJustPressed(EKeys::Touch1) && WasInputKeyJustReleased(EKeys::Touch1))
+	{
+		// Tap si bref (ou image si lente) que l'appui et le relâchement sont arrivés dans la même image :
+		// la lecture des doigts ne l'a jamais vu posé, mais les événements de touche l'ont enregistré.
+		HandleTap(Finger1);
+	}
+
+	// Plus aucun doigt posé : le prochain contact redevient le doigt principal.
+	if (!bDown1 && !bDown2)
+	{
+		PrimaryTouch = ETouchIndex::Touch1;
 	}
 
 	// --- Molette : zoom pour les tests sur PC. ---
@@ -194,9 +209,11 @@ void ABotolPlayerController::HandleTap(const FVector2D& ScreenPosition)
 	}
 
 	// Tolérance au doigt : si on a tapé juste à côté d'une de ses unités, on la prend quand même.
+	// Avec une unité déjà sélectionnée, un tap au sol est d'abord un ordre : la tolérance se réduit au contact.
 	if (!TappedUnit && bHasGroundPoint)
 	{
-		TappedUnit = FindClosestUnit(GroundPoint, TapSelectRadius, PlayerTeamId);
+		const float Radius = SelectedUnit.IsValid() ? TapSelectRadiusWhenSelected : TapSelectRadius;
+		TappedUnit = FindClosestUnit(GroundPoint, Radius, PlayerTeamId);
 	}
 
 	if (TappedUnit && TappedUnit->GetTeamId() == PlayerTeamId)
@@ -205,11 +222,19 @@ void ABotolPlayerController::HandleTap(const FVector2D& ScreenPosition)
 		return;
 	}
 
-	if (SelectedUnit.IsValid() && bHasGroundPoint)
+	if (!SelectedUnit.IsValid())
 	{
-		// Unité ennemie tapée : pour l'instant, on se déplace vers elle (l'attaque arrive au jalon M3).
-		const FVector Destination = TappedUnit ? TappedUnit->GetActorLocation() : GroundPoint;
-		SelectedUnit->CommandMoveTo(Destination);
+		return;
+	}
+
+	if (TappedUnit)
+	{
+		// Unité ennemie tapée : pour l'instant, on la rejoint (l'attaque arrive au jalon M3).
+		SelectedUnit->CommandMoveToActor(TappedUnit);
+	}
+	else if (bHasGroundPoint)
+	{
+		SelectedUnit->CommandMoveTo(GroundPoint);
 	}
 }
 

@@ -1,7 +1,9 @@
 ﻿#include "Units/BotolUnit.h"
 
+#include "AbstractNavData.h"
 #include "AIController.h"
 #include "AITypes.h"
+#include "NavigationSystem.h"
 #include "Animation/AnimInstance.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -23,6 +25,18 @@ namespace BotolUnitDefaults
 	constexpr float MoveAcceptanceRadius = 20.f;
 	// Paramètre de couleur du matériau moteur BasicShapeMaterial.
 	const FName ColorParameter(TEXT("Color"));
+
+	/** Vrai si le niveau contient un vrai NavMesh (pas seulement les données de navigation abstraites par défaut). */
+	static bool HasNavMesh(UWorld* World)
+	{
+		UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World);
+		if (!NavSystem)
+		{
+			return false;
+		}
+		const ANavigationData* NavData = NavSystem->GetDefaultNavDataInstance(FNavigationSystem::DontCreate);
+		return NavData && !NavData->IsA<AAbstractNavData>();
+	}
 }
 
 ABotolUnit::ABotolUnit()
@@ -161,23 +175,31 @@ void ABotolUnit::CommandMoveTo(const FVector& Destination)
 		return;
 	}
 
-	const EPathFollowingRequestResult::Type Result = AIController->MoveToLocation(
+	// Avec un NavMesh, une destination inaccessible (hors du maillage) est simplement refusée,
+	// au lieu d'envoyer l'unité en ligne droite à travers les obstacles.
+	const bool bHasNavMesh = BotolUnitDefaults::HasNavMesh(GetWorld());
+	AIController->MoveToLocation(
 		Destination,
 		BotolUnitDefaults::MoveAcceptanceRadius,
 		/*bStopOnOverlap*/ true,
-		/*bUsePathfinding*/ true,
-		/*bProjectDestinationToNavigation*/ true,
+		/*bUsePathfinding*/ bHasNavMesh,
+		/*bProjectDestinationToNavigation*/ bHasNavMesh,
 		/*bCanStrafe*/ false);
+}
 
-	if (Result == EPathFollowingRequestResult::Failed)
+void ABotolUnit::CommandMoveToActor(AActor* Target)
+{
+	AAIController* AIController = Cast<AAIController>(GetController());
+	if (!AIController || !Target)
 	{
-		// Pas de NavMesh dans le niveau : déplacement direct, utile pour un premier test.
-		AIController->MoveToLocation(
-			Destination,
-			BotolUnitDefaults::MoveAcceptanceRadius,
-			/*bStopOnOverlap*/ true,
-			/*bUsePathfinding*/ false,
-			/*bProjectDestinationToNavigation*/ false,
-			/*bCanStrafe*/ false);
+		return;
 	}
+
+	// Vers un acteur, le test d'arrivée tient compte de la taille de la cible : l'unité s'arrête au contact.
+	AIController->MoveToActor(
+		Target,
+		BotolUnitDefaults::MoveAcceptanceRadius,
+		/*bStopOnOverlap*/ true,
+		/*bUsePathfinding*/ BotolUnitDefaults::HasNavMesh(GetWorld()),
+		/*bCanStrafe*/ false);
 }

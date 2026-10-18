@@ -35,14 +35,19 @@ public:
 	void SetSelected(bool bInSelected);
 
 	/**
-	 * Ordre de déplacement. Passe par le NavMesh s'il existe ;
-	 * sinon (niveau de test sans NavMesh), l'unité va en ligne droite.
+	 * Ordre de déplacement vers un point. Avec un NavMesh, l'unité contourne les obstacles et une destination
+	 * inaccessible est refusée ; sans NavMesh (niveau de test), elle va en ligne droite.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "BOTOL|Unit")
 	void CommandMoveTo(const FVector& Destination);
 
+	/** Ordre de rejoindre un acteur (une unité ennemie, par exemple), même s'il bouge. S'arrête au contact. */
+	UFUNCTION(BlueprintCallable, Category = "BOTOL|Unit")
+	void CommandMoveToActor(AActor* Target);
+
+	/** Sélection en jeu (au doigt). Nom distinct de UObject::IsSelected, qui concerne la sélection dans l'éditeur. */
 	UFUNCTION(BlueprintPure, Category = "BOTOL|Unit")
-	bool IsSelected() const { return bSelected; }
+	bool IsUnitSelected() const { return bSelected; }
 
 	UFUNCTION(BlueprintPure, Category = "BOTOL|Unit")
 	int32 GetTeamId() const { return TeamId; }
