@@ -15,6 +15,8 @@ Rédigé le 16/10/2026 à partir de la page Notion BOTOL (02/09/2026), du journa
 
 ## 1. Ce qui est déjà décidé
 
+> **Confirmé par Liamor le 18/10/2026 :** BOTOL est une **application mobile**, et tout y est pensé pour le mobile : interface, contrôles au doigt, durée des parties. Ce n'est pas un portage de WOTOL PC. La vue est en **3D isométrique**, comme dans les jeux de stratégie mobiles existants. C'était la direction de départ.
+
 Source : page Notion BOTOL du 02/09/2026, sauf mention contraire.
 
 - BOTOL est un **projet distinct**. On ne convertit, n'écrase et ne supprime jamais rien dans WOTOL.
@@ -53,7 +55,7 @@ Sous Windows, on construit et on teste sur Android sans matériel supplémentair
 
 **Modèle de départ : *Top Down*, variante *Strategy* (disponible depuis UE 5.6).**
 D'après Epic, cette variante fournit déjà une caméra orthographique isométrique avec zoom et déplacement, la sélection de plusieurs unités et leur déplacement en groupe. C'est le plus proche des étapes 3 et 4 de la boucle.
-*Attention :* la variante repose sur un **déplacement par grille** et ses contrôles sont prévus pour la souris et le clavier. La grille est une décision de game design qui n'est pas prise (voir section 3), et le tactile sera à refaire.
+*Ce qu'on garde, ce qu'on remplace :* on garde la caméra isométrique et la sélection en groupe. Les contrôles souris et clavier du modèle sont remplacés par du tactile au jalon M2. La variante déplace les unités sur une grille ; si le benchmark des jeux mobiles confirme un déplacement libre, la grille sera retirée à ce moment-là.
 
 **Gestion de versions : un nouveau dépôt Git privé « BOTOL » avec Git LFS.**
 Tu travailles seul sur BOTOL et Claude Code fonctionne avec Git. Perforce, recommandé le 04/10 pour WOTOL, se justifie surtout quand plusieurs personnes modifient les mêmes `.uasset`. Vérifie le quota LFS gratuit de l'hébergeur : il se remplit vite avec des modèles 3D et des textures.
@@ -63,19 +65,18 @@ Selon Epic, Lumen sur mobile reste expérimental, réservé aux Android haut de 
 
 ---
 
-## 3. Arbitrages à faire avant de coder
+## 3. Réglages par défaut et points encore ouverts
 
-Ces points ne sont pas décidés. Claude ne doit pas les trancher à ta place.
+**Réglages par défaut retenus pour avancer.** Ils se déduisent de la consigne du 18/10 (« comme les jeux de stratégie mobiles existants »). Il suffit de le dire pour en changer un.
 
-1. **Temps réel ou tour par tour ?** WOTOL est en temps réel. La page BOTOL ne le précise pas. C'est la décision qui pèse le plus sur la suite :
-   - le tour par tour colle mieux au tactile et aux parties courtes, c'est le modèle de Polytopia ;
-   - il rend un futur multijoueur beaucoup moins cher, puisque des parties asynchrones n'ont pas besoin de serveurs temps réel ;
-   - le temps réel reste plus fidèle à l'esprit de WOTOL.
-2. **Déplacement sur grille ou libre ?** La variante *Strategy* part sur une grille.
-3. **Écran en paysage ou en portrait ?**
-4. **Appareil de test de référence :** quel téléphone Android as-tu sous la main ? Les budgets de performance seront mesurés dessus.
-5. **À qui appartient BOTOL : 3DÉCORS, toi, ou une future société ?** Ça détermine au nom de qui ouvrir les comptes développeur et quel identifiant d'application (*package name*) choisir. Cet identifiant ne peut plus changer une fois l'application publiée sur Google Play. Attention, un segment ne peut pas commencer par un chiffre : `com.3decors.botol` est invalide, mais `com.troisdecors.botol` fonctionne.
-6. **Modèle économique :** toujours ouvert. Une piste à étudier, pas une décision : Aquiloris et Noxéens gratuits, les trois autres factions vendues à l'unité, comme Polytopia vend ses tribus.
+- **Temps réel**, comme la grande majorité des jeux de stratégie mobiles en 3D isométrique, et comme WOTOL.
+- **Écran en paysage**, réglage provisoire. Il sera confirmé ou corrigé par le benchmark des jeux mobiles, avant que l'interface soit dessinée (jalon M2).
+
+**Points ouverts, qui ne bloquent pas la session 1 :**
+
+1. **Appareil de test de référence :** quel téléphone Android as-tu sous la main ? Les budgets de performance seront mesurés dessus.
+2. **À qui appartient BOTOL : 3DÉCORS, toi, ou une future société ?** Ça détermine au nom de qui ouvrir les comptes développeur et quel identifiant d'application (*package name*) choisir. Cet identifiant ne peut plus changer une fois l'application publiée sur Google Play. Attention, un segment ne peut pas commencer par un chiffre : `com.3decors.botol` est invalide, mais `com.troisdecors.botol` fonctionne.
+3. **Modèle économique :** toujours ouvert. Une piste à étudier, pas une décision : Aquiloris et Noxéens gratuits, les trois autres factions vendues à l'unité, comme Polytopia vend ses tribus.
 
 ---
 

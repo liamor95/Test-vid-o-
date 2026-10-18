@@ -46,9 +46,15 @@ Quand Liamor demande à apprendre ou à faire lui-même :
 - Premier prototype : Aquiloris contre Noxéens seulement. Les trois autres factions (Thalassidras, Muréniens, Pirates Abyssaux) arriveront plus tard, sans réécrire l'architecture.
 - Le contenu du modèle de départ reste dans `Content/Variant_Strategy/`. Le contenu BOTOL va dans `Content/BOTOL/`.
 
+## Décisions confirmées (18/10/2026)
+
+- BOTOL est une **application mobile** : interface, contrôles au doigt et durée des parties sont pensés pour le mobile. Ne jamais reproduire l'interface ni les contrôles PC de WOTOL.
+- **Vue 3D isométrique**, comme dans les jeux de stratégie mobiles existants.
+- Par défaut : **temps réel**, écran en **paysage** (provisoire).
+
 ## Points ouverts — ne pas trancher
 
-Temps réel ou tour par tour ; déplacement sur grille ou libre ; paysage ou portrait ; propriétaire de BOTOL et identifiant d'application ; modèle économique ; appareil minimum. Voir le `README.md` du kit de démarrage.
+Propriétaire de BOTOL et identifiant d'application ; modèle économique ; appareil minimum. Voir le `README.md` du kit de démarrage.
 
 ## Traçabilité
 
