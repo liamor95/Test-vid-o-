@@ -20,6 +20,23 @@ ABotolPlayerController::ABotolPlayerController()
 	bEnableTouchOverEvents = false;
 }
 
+void ABotolPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	// Mémorise la position exacte de chaque appui, même quand appui et relâchement arrivent dans la même image.
+	FInputTouchBinding& PressBinding = InputComponent->BindTouch(IE_Pressed, this, &ABotolPlayerController::OnTouchPressed);
+	PressBinding.bConsumeInput = false;
+}
+
+void ABotolPlayerController::OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Location)
+{
+	if (FingerIndex == ETouchIndex::Touch1)
+	{
+		Touch1PressPosition = FVector2D(Location.X, Location.Y);
+	}
+}
+
 void ABotolPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -55,6 +72,8 @@ void ABotolPlayerController::PlayerTick(float DeltaTime)
 		return;
 	}
 	const double Now = World->GetRealTimeSeconds();
+	const double RealFrameTime = Now - LastTickRealTime;
+	LastTickRealTime = Now;
 
 	float X1 = 0.f, Y1 = 0.f, X2 = 0.f, Y2 = 0.f;
 	bool bDown1 = false, bDown2 = false;
@@ -89,12 +108,30 @@ void ABotolPlayerController::PlayerTick(float DeltaTime)
 		PrimaryLast = bDown1 ? Finger1 : Finger2;
 	}
 
+	// Nouveau contact : le doigt principal est celui qui est posé (Touch1 en priorité).
+	if (!bPrimaryDown)
+	{
+		PrimaryTouch = (bDown1 || !bDown2) ? ETouchIndex::Touch1 : ETouchIndex::Touch2;
+	}
+
 	const bool bPrimaryNowDown = (PrimaryTouch == ETouchIndex::Touch1) ? bDown1 : bDown2;
 	const FVector2D PrimaryPosition = (PrimaryTouch == ETouchIndex::Touch1) ? Finger1 : Finger2;
+	const FKey PrimaryKey = (PrimaryTouch == ETouchIndex::Touch1) ? EKeys::Touch1 : EKeys::Touch2;
 
 	// --- Un doigt : glisser pour déplacer la vue, ou tap. ---
 	if (bPrimaryNowDown)
 	{
+		// Doigt relevé puis reposé dans la même image : on termine d'abord l'ancien contact,
+		// pour ne pas le prolonger (ce qui ferait sauter la caméra et perdrait le tap).
+		if (bPrimaryDown && WasInputKeyJustPressed(PrimaryKey) && WasInputKeyJustReleased(PrimaryKey))
+		{
+			if (bTapCandidate && (Now - PrimaryDownTime) <= TapMaxDuration)
+			{
+				HandleTap(PrimaryLast);
+			}
+			bPrimaryDown = false;
+		}
+
 		if (!bPrimaryDown)
 		{
 			bPrimaryDown = true;
@@ -128,7 +165,9 @@ void ABotolPlayerController::PlayerTick(float DeltaTime)
 	else if (bPrimaryDown)
 	{
 		bPrimaryDown = false;
-		if (bTapCandidate && (Now - PrimaryDownTime) <= TapMaxDuration)
+		// Le doigt a pu glisser entre la dernière image et son relâchement : on vérifie la position finale.
+		const bool bStayedStill = FVector2D::Distance(PrimaryPosition, PrimaryStart) <= GetDragThreshold();
+		if (bTapCandidate && bStayedStill && (Now - PrimaryDownTime) <= TapMaxDuration)
 		{
 			HandleTap(PrimaryLast);
 		}
@@ -139,13 +178,12 @@ void ABotolPlayerController::PlayerTick(float DeltaTime)
 	{
 		// Tap si bref (ou image si lente) que l'appui et le relâchement sont arrivés dans la même image :
 		// la lecture des doigts ne l'a jamais vu posé, mais les événements de touche l'ont enregistré.
-		HandleTap(Finger1);
-	}
-
-	// Plus aucun doigt posé : le prochain contact redevient le doigt principal.
-	if (!bDown1 && !bDown2)
-	{
-		PrimaryTouch = ETouchIndex::Touch1;
+		// Un balayage rapide arrivé d'un bloc n'est pas un tap : on compare la position d'appui à celle du relâchement.
+		const bool bStayedStill = FVector2D::Distance(Touch1PressPosition, Finger1) <= GetDragThreshold();
+		if (bStayedStill && RealFrameTime <= TapMaxDuration)
+		{
+			HandleTap(Finger1);
+		}
 	}
 
 	// --- Molette : zoom pour les tests sur PC. ---

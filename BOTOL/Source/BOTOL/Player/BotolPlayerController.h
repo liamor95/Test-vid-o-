@@ -29,6 +29,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 
 	/** Équipe contrôlée par le joueur. */
 	UPROPERTY(EditAnywhere, Category = "BOTOL|Touch")
@@ -59,6 +60,7 @@ protected:
 	float MouseWheelZoomStep = 0.1f;
 
 private:
+	void OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Location);
 	ABotolCameraPawn* GetCameraPawn() const;
 	bool DeprojectToGround(const FVector2D& ScreenPosition, FVector& OutWorldPoint) const;
 	float GetDragThreshold() const;
@@ -80,4 +82,10 @@ private:
 
 	bool bPinching = false;
 	double LastPinchDistance = 0.0;
+
+	/** Position du dernier appui de Touch1, lue dans l'événement d'appui lui-même. */
+	FVector2D Touch1PressPosition = FVector2D::ZeroVector;
+
+	/** Heure réelle de l'image précédente, pour mesurer les images lentes. */
+	double LastTickRealTime = 0.0;
 };

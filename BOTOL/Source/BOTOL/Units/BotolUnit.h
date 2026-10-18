@@ -35,8 +35,9 @@ public:
 	void SetSelected(bool bInSelected);
 
 	/**
-	 * Ordre de déplacement vers un point. Avec un NavMesh, l'unité contourne les obstacles et une destination
-	 * inaccessible est refusée ; sans NavMesh (niveau de test), elle va en ligne droite.
+	 * Ordre de déplacement vers un point. Avec un NavMesh, l'unité contourne les obstacles ; une destination
+	 * hors du maillage est refusée, une destination inaccessible mène au point accessible le plus proche.
+	 * Sans NavMesh (niveau de test), ou si l'unité n'est pas sur le maillage, elle va en ligne droite.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "BOTOL|Unit")
 	void CommandMoveTo(const FVector& Destination);

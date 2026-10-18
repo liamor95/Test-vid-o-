@@ -75,13 +75,16 @@ void ABotolGameMode::SpawnTestTeam(UBotolFactionData* Faction, int32 TeamId, con
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
+	// Bloc à peu près carré, pour que même 200 unités (mesures du jalon M8) restent sur un sol de 60 x 60 m.
+	const int32 Columns = FMath::Max(BotolTestTeam::Columns, FMath::CeilToInt(FMath::Sqrt(static_cast<float>(TestUnitsPerTeam))));
+
 	for (int32 Index = 0; Index < TestUnitsPerTeam; ++Index)
 	{
-		const int32 Row = Index / BotolTestTeam::Columns;
-		const int32 Column = Index % BotolTestTeam::Columns;
+		const int32 Row = Index / Columns;
+		const int32 Column = Index % Columns;
 		const FVector Offset(
 			Direction * Row * BotolTestTeam::Spacing,
-			(Column - (BotolTestTeam::Columns - 1) * 0.5) * BotolTestTeam::Spacing,
+			(Column - (Columns - 1) * 0.5) * BotolTestTeam::Spacing,
 			0.0);
 
 		ABotolUnit* Unit = World->SpawnActor<ABotolUnit>(ClassToSpawn, Center + Offset, Facing, SpawnParameters);

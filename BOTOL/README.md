@@ -73,7 +73,7 @@ Pour l'instant, le projet vit dans le dépôt `Test-vid-o-` (branche `ccr-c8633f
 | Rendu | Rendu *forward* mobile, anticrénelage MSAA 4x, éclairage précalculé autorisé, HDR mobile gardé pour l'ambiance | `DefaultEngine.ini` |
 | Fonctions PC coupées | Nanite, Lumen, réflexions, ombres virtuelles, *distance fields*, ray tracing, textures virtuelles, Substrate | `DefaultEngine.ini` |
 | Effets coupés par défaut | Exposition automatique, flou de mouvement, occlusion ambiante, *lens flare* | `DefaultEngine.ini` |
-| Android | Paysage avec rotation auto, plein écran immersif, Vulkan + OpenGL ES 3.1 en secours, arm64, identifiant provisoire `com.troisdecors.botol` | `DefaultEngine.ini` |
+| Android | Paysage avec rotation auto, plein écran immersif, Vulkan + OpenGL ES 3.2 en secours, appli déclarée comme jeu (paysage gardé sur tablette sous Android 16), affichage autour de l'encoche, arm64, identifiant provisoire `com.troisdecors.botol` | `DefaultEngine.ini` |
 | iOS | Paysage uniquement, identifiant provisoire identique | `DefaultEngine.ini` |
 | Entrées | Pas de joysticks virtuels ; dans l'éditeur, la souris imite un doigt | `Config/DefaultInput.ini` |
 | Paquet | Shaders partagés, compression, pas de fichiers de debug embarqués | `Config/DefaultGame.ini` |

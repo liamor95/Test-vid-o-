@@ -3,6 +3,7 @@
 #include "AbstractNavData.h"
 #include "AIController.h"
 #include "AITypes.h"
+#include "BOTOL.h"
 #include "NavigationSystem.h"
 #include "Animation/AnimInstance.h"
 #include "Components/CapsuleComponent.h"
@@ -26,7 +27,7 @@ namespace BotolUnitDefaults
 	// Paramètre de couleur du matériau moteur BasicShapeMaterial.
 	const FName ColorParameter(TEXT("Color"));
 
-	/** Vrai si le niveau contient un vrai NavMesh (pas seulement les données de navigation abstraites par défaut). */
+	/** Vrai si le niveau contient un acteur NavMesh (pas seulement les données de navigation abstraites par défaut). */
 	static bool HasNavMesh(UWorld* World)
 	{
 		UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World);
@@ -36,6 +37,21 @@ namespace BotolUnitDefaults
 		}
 		const ANavigationData* NavData = NavSystem->GetDefaultNavDataInstance(FNavigationSystem::DontCreate);
 		return NavData && !NavData->IsA<AAbstractNavData>();
+	}
+
+	/**
+	 * Vrai si l'unité se tient réellement sur le NavMesh. Faux si le maillage n'a pas de tuiles
+	 * (volume de navigation supprimé, génération pas finie) ou si l'unité est en dehors.
+	 */
+	static bool IsUnitOnNavMesh(const ACharacter& Unit)
+	{
+		UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(Unit.GetWorld());
+		if (!NavSystem)
+		{
+			return false;
+		}
+		FNavLocation OnNavMesh;
+		return NavSystem->ProjectPointToNavigation(Unit.GetNavAgentLocation(), OnNavMesh, INVALID_NAVEXTENT, &Unit.GetNavAgentPropertiesRef());
 	}
 }
 
@@ -175,16 +191,38 @@ void ABotolUnit::CommandMoveTo(const FVector& Destination)
 		return;
 	}
 
-	// Avec un NavMesh, une destination inaccessible (hors du maillage) est simplement refusée,
-	// au lieu d'envoyer l'unité en ligne droite à travers les obstacles.
+	// Avec un NavMesh, une destination hors du maillage est refusée, au lieu d'envoyer l'unité en ligne droite
+	// à travers les obstacles. Une destination sur le maillage mais inaccessible mène au point accessible le plus proche.
 	const bool bHasNavMesh = BotolUnitDefaults::HasNavMesh(GetWorld());
-	AIController->MoveToLocation(
+	const EPathFollowingRequestResult::Type Result = AIController->MoveToLocation(
 		Destination,
 		BotolUnitDefaults::MoveAcceptanceRadius,
 		/*bStopOnOverlap*/ true,
 		/*bUsePathfinding*/ bHasNavMesh,
 		/*bProjectDestinationToNavigation*/ bHasNavMesh,
 		/*bCanStrafe*/ false);
+
+	if (Result != EPathFollowingRequestResult::Failed || !bHasNavMesh)
+	{
+		return;
+	}
+
+	if (!BotolUnitDefaults::IsUnitOnNavMesh(*this))
+	{
+		// L'unité elle-même n'est pas sur le NavMesh (maillage vide ou unité hors limites) : déplacement direct,
+		// plutôt qu'un ordre perdu sans explication.
+		AIController->MoveToLocation(
+			Destination,
+			BotolUnitDefaults::MoveAcceptanceRadius,
+			/*bStopOnOverlap*/ true,
+			/*bUsePathfinding*/ false,
+			/*bProjectDestinationToNavigation*/ false,
+			/*bCanStrafe*/ false);
+	}
+	else
+	{
+		UE_LOG(LogBotol, Verbose, TEXT("%s : destination hors NavMesh refusee."), *GetName());
+	}
 }
 
 void ABotolUnit::CommandMoveToActor(AActor* Target)
@@ -196,10 +234,22 @@ void ABotolUnit::CommandMoveToActor(AActor* Target)
 	}
 
 	// Vers un acteur, le test d'arrivée tient compte de la taille de la cible : l'unité s'arrête au contact.
-	AIController->MoveToActor(
+	const bool bHasNavMesh = BotolUnitDefaults::HasNavMesh(GetWorld());
+	const EPathFollowingRequestResult::Type Result = AIController->MoveToActor(
 		Target,
 		BotolUnitDefaults::MoveAcceptanceRadius,
 		/*bStopOnOverlap*/ true,
-		/*bUsePathfinding*/ BotolUnitDefaults::HasNavMesh(GetWorld()),
+		/*bUsePathfinding*/ bHasNavMesh,
 		/*bCanStrafe*/ false);
+
+	if (Result == EPathFollowingRequestResult::Failed && bHasNavMesh && !BotolUnitDefaults::IsUnitOnNavMesh(*this))
+	{
+		// Même repli que pour un point : l'unité n'est pas sur le NavMesh, elle rejoint la cible en ligne droite.
+		AIController->MoveToActor(
+			Target,
+			BotolUnitDefaults::MoveAcceptanceRadius,
+			/*bStopOnOverlap*/ true,
+			/*bUsePathfinding*/ false,
+			/*bCanStrafe*/ false);
+	}
 }
