@@ -1,5 +1,6 @@
 ﻿#include "Player/BotolPlayerController.h"
 
+#include "Components/InputComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "InputCoreTypes.h"
@@ -116,7 +117,8 @@ void ABotolPlayerController::PlayerTick(float DeltaTime)
 
 	const bool bPrimaryNowDown = (PrimaryTouch == ETouchIndex::Touch1) ? bDown1 : bDown2;
 	const FVector2D PrimaryPosition = (PrimaryTouch == ETouchIndex::Touch1) ? Finger1 : Finger2;
-	const FKey PrimaryKey = (PrimaryTouch == ETouchIndex::Touch1) ? EKeys::Touch1 : EKeys::Touch2;
+	// Les touches tactiles d'Unreal sont dans EKeys::TouchKeys, indexées par ETouchIndex.
+	const FKey PrimaryKey = EKeys::TouchKeys[PrimaryTouch];
 
 	// --- Un doigt : glisser pour déplacer la vue, ou tap. ---
 	if (bPrimaryNowDown)
@@ -174,7 +176,7 @@ void ABotolPlayerController::PlayerTick(float DeltaTime)
 		bDragging = false;
 		bTapCandidate = false;
 	}
-	else if (!bDown1 && !bDown2 && WasInputKeyJustPressed(EKeys::Touch1) && WasInputKeyJustReleased(EKeys::Touch1))
+	else if (!bDown1 && !bDown2 && WasInputKeyJustPressed(EKeys::TouchKeys[ETouchIndex::Touch1]) && WasInputKeyJustReleased(EKeys::TouchKeys[ETouchIndex::Touch1]))
 	{
 		// Tap si bref (ou image si lente) que l'appui et le relâchement sont arrivés dans la même image :
 		// la lecture des doigts ne l'a jamais vu posé, mais les événements de touche l'ont enregistré.
